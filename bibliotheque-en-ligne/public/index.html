@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bibliothèque en Ligne</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0e0b; --bg2: #1a1814; --bg3: #242018;
+      --accent: #c9a84c; --accent2: #e8c97a;
+      --text: #f0ece0; --text2: #a09880;
+      --border: rgba(201,168,76,0.2); --card: #1e1c17;
+      --radius: 12px; --error: #e05555; --success: #5aad7a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-btn { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+    .nav-btn.ghost { background: transparent; color: var(--text2); }
+    .nav-btn.ghost:hover { color: var(--text); background: var(--bg3); }
+    .nav-btn.primary { background: var(--accent); color: var(--bg); font-weight: 600; }
+    .nav-btn.primary:hover { background: var(--accent2); }
+    .nav-btn.outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .nav-btn.outline:hover { border-color: var(--accent); color: var(--accent); }
+    .page { display: none; }
+    .page.active { display: block; }
+    .hero { background: linear-gradient(160deg, #1a1814 0%, #0f0e0b 60%); padding: 80px 32px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%); pointer-events: none; }
+    .hero-label { display: inline-block; background: rgba(201,168,76,0.15); color: var(--accent); padding: 5px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; margin-bottom: 20px; border: 1px solid var(--border); }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.15; margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero p { color: var(--text2); font-size: 1.1rem; max-width: 500px; margin: 0 auto 36px; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero-primary { padding: 13px 28px; background: var(--accent); color: var(--bg); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-hero-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-hero-ghost { padding: 13px 28px; background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
+    .btn-hero-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .stats { display: flex; justify-content: center; gap: 48px; padding: 40px 32px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--accent); display: block; }
+    .stat-label { color: var(--text2); font-size: 0.9rem; }
+    .catalogue-header { padding: 32px 32px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .catalogue-header h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; }
+    .search-bar { display: flex; gap: 10px; align-items: center; }
+    .search-bar input { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 9px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 240px; transition: border 0.2s; }
+    .search-bar input:focus { outline: none; border-color: var(--accent); }
+    .search-bar input::placeholder { color: var(--text2); }
+    .filter-select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 9px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; cursor: pointer; }
+    .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 24px 32px 48px; }
+    .book-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; transition: all 0.2s; }
+    .book-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 32px rgba(201,168,76,0.1); }
+    .book-cover { height: 180px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; }
+    .book-badge { position: absolute; top: 10px; right: 10px; font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+    .badge-available { background: rgba(90,173,122,0.2); color: #5aad7a; }
+    .badge-borrowed { background: rgba(224,85,85,0.2); color: #e05555; }
+    .book-info { padding: 14px; }
+    .book-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; margin-bottom: 4px; line-height: 1.3; }
+    .book-author { color: var(--text2); font-size: 0.82rem; margin-bottom: 8px; }
+    .book-genre { display: inline-block; background: rgba(201,168,76,0.1); color: var(--accent); font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; margin-bottom: 10px; }
+    .btn-borrow { width: 100%; padding: 8px; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; }
+    .btn-borrow.can { background: var(--accent); color: var(--bg); }
+    .btn-borrow.can:hover { background: var(--accent2); }
+    .btn-borrow.cant { background: var(--bg3); color: var(--text2); cursor: not-allowed; }
+    .btn-borrow.return { background: rgba(90,173,122,0.2); color: #5aad7a; }
+    .btn-borrow.return:hover { background: rgba(90,173,122,0.35); }
+    .auth-page { min-height: calc(100vh - 64px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .auth-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; }
+    .auth-box h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 8px; }
+    .auth-box p { color: var(--text2); margin-bottom: 28px; font-size: 0.95rem; }
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 28px; background: var(--bg3); border-radius: 10px; padding: 4px; }
+    .auth-tab { flex: 1; padding: 9px; border: none; background: transparent; color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+    .auth-tab.active { background: var(--accent); color: var(--bg); font-weight: 600; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+    .form-group input { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 11px 14px; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; transition: border 0.2s; }
+    .form-group input:focus { outline: none; border-color: var(--accent); }
+    .form-group input::placeholder { color: var(--text2); opacity: 0.6; }
+    .btn-submit { width: 100%; padding: 12px; background: var(--accent); color: var(--bg); border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
+    .btn-submit:hover { background: var(--accent2); }
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 14px; }
+    .msg.error { background: rgba(224,85,85,0.15); color: var(--error); border: 1px solid rgba(224,85,85,0.3); }
+    .msg.success { background: rgba(90,173,122,0.15); color: var(--success); border: 1px solid rgba(90,173,122,0.3); }
+    .profil-page { padding: 32px; max-width: 900px; margin: 0 auto; }
+    .profil-header { display: flex; align-items: center; gap: 20px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 32px; }
+    .avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #8b6914); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--bg); font-weight: 700; flex-shrink: 0; }
+    .profil-info h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
+    .profil-info p { color: var(--text2); font-size: 0.9rem; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .section-title span { background: rgba(201,168,76,0.15); color: var(--accent); font-size: 0.8rem; font-family: 'DM Sans', sans-serif; padding: 3px 10px; border-radius: 20px; }
+    .emprunts-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .emprunt-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .emprunt-info { display: flex; align-items: center; gap: 14px; }
+    .emprunt-emoji { font-size: 1.8rem; }
+    .emprunt-title { font-weight: 500; }
+    .emprunt-author { color: var(--text2); font-size: 0.85rem; }
+    .emprunt-date { color: var(--text2); font-size: 0.82rem; }
+    .btn-return { padding: 7px 16px; background: rgba(90,173,122,0.15); color: #5aad7a; border: 1px solid rgba(90,173,122,0.3); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .btn-return:hover { background: rgba(90,173,122,0.3); }
+    .empty-state { text-align: center; padding: 32px; color: var(--text2); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; font-size: 0.9rem; z-index: 999; transform: translateY(80px); opacity: 0; transition: all 0.3s; max-width: 320px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(90,173,122,0.4); color: #5aad7a; }
+    .toast.error { border-color: rgba(224,85,85,0.4); color: var(--error); }
+    footer { border-top: 1px solid var(--border); padding: 24px 32px; text-align: center; color: var(--text2); font-size: 0.85rem; }
+    footer span { color: var(--accent); }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">📚 Bibliothèque</div>
+  <div class="nav-links" id="navLinks"></div>
+</nav>
+
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-label">📖 Bibliothèque numérique</div>
+    <h1>Des milliers de livres,<br><em>à portée de clic</em></h1>
+    <p>Explorez notre catalogue, empruntez vos livres préférés et gérez vos lectures en toute simplicité.</p>
+    <div class="hero-btns">
+      <button class="btn-hero-primary" onclick="showPage('catalogue')">Explorer le catalogue</button>
+      <button class="btn-hero-ghost" onclick="showPage('auth')">Créer un compte</button>
+    </div>
+  </section>
+  <div class="stats">
+    <div class="stat"><span class="stat-num">16</span><span class="stat-label">Livres disponibles</span></div>
+    <div class="stat"><span class="stat-num">6</span><span class="stat-label">Genres littéraires</span></div>
+    <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Gratuit</span></div>
+  </div>
+</div>
+
+<div class="page" id="page-catalogue">
+  <div class="catalogue-header">
+    <h2>Catalogue</h2>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Rechercher..." oninput="filterBooks()" />
+      <select class="filter-select" id="genreFilter" onchange="filterBooks()">
+        <option value="">Tous les genres</option>
+        <option value="Roman">Roman</option>
+        <option value="Science-Fiction">Science-Fiction</option>
+        <option value="Policier">Policier</option>
+        <option value="Philosophie">Philosophie</option>
+        <option value="Histoire">Histoire</option>
+        <option value="Biographie">Biographie</option>
+      </select>
+    </div>
+  </div>
+  <div class="book-grid" id="bookGrid"></div>
+</div>
+
+<div class="page" id="page-auth">
+  <div class="auth-page">
+    <div class="auth-box">
+      <h2>Bienvenue</h2>
+      <p>Connectez-vous pour emprunter des livres.</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Inscription</button>
+      </div>
+      <div id="formLogin">
+        <div id="loginMsg"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="votre@email.com" /></div>
+        <div class="form-group"><label>Mot de passe</label><input type="password" id="loginPassword" placeholder="••••••••" /></div>
+        <button class="btn-submit" onclick="login()">Se connecter</button>
+      </div>
+      <div id="formRegister" style="display:none">
+        <div id="registerMsg"></div>
+        <div class="form-group"><label>Prénom</label><input type="text" id="regPrenom" placeholder="Marie" /></div>
+        <div class="form-group"><label>Nom</label><input type="text" id="regNom" placeholder="Dupont" /></div>
+        <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="votre@email.com" /></div>
+        <div class="form-group"><label>Mot de passe</label><input type="password" id="regPassword" placeholder="Minimum 6 caractères" /></div>
+        <button class="btn-submit" onclick="register()">Créer mon compte</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-profil">
+  <div class="profil-page">
+    <div class="profil-header">
+      <div class="avatar" id="profilAvatar"></div>
+      <div class="profil-info"><h3 id="profilNom"></h3><p id="profilEmail"></p></div>
+    </div>
+    <div class="section-title">Mes emprunts en cours <span id="empruntsCount">0</span></div>
+    <div class="emprunts-list" id="empruntsList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>Bibliothèque en ligne — Projet personnel de <span>Solène N'Dah-Sekou</span></footer>
+
+<script>
+let currentUser = null;
+let allBooks = [];
+
+async function api(method, url, body) {
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.json();
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'catalogue') loadBooks();
+  if (name === 'profil') loadProfil();
+}
+
+function updateNav() {
+  const nav = document.getElementById('navLinks');
+  if (currentUser) {
+    nav.innerHTML = `
+      <button class="nav-btn ghost" onclick="showPage('home')">Accueil</button>
+      <button class="nav-btn ghost" onclick="showPage('catalogue')">Catalogue</button>
+      <button class="nav-btn ghost" onclick="showPage('profil')">Mon profil</button>
+      <button class="nav-btn outline" onclick="logout()">Déconnexion</button>`;
+  } else {
+    nav.innerHTML = `
+      <button class="nav-btn ghost" onclick="showPage('home')">Accueil</button>
+      <button class="nav-btn ghost" onclick="showPage('catalogue')">Catalogue</button>
+      <button class="nav-btn primary" onclick="showPage('auth')">Connexion</button>`;
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('formLogin').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('formRegister').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tabLogin').className = 'auth-tab' + (tab === 'login' ? ' active' : '');
+  document.getElementById('tabRegister').className = 'auth-tab' + (tab === 'register' ? ' active' : '');
+}
+
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const data = await api('POST', '/api/login', { email, password });
+  if (data.error) { showMsg('loginMsg', data.error, 'error'); return; }
+  currentUser = data.user;
+  updateNav();
+  showToast('Bienvenue ' + currentUser.prenom + ' ! 👋', 'success');
+  showPage('catalogue');
+}
+
+async function register() {
+  const prenom = document.getElementById('regPrenom').value.trim();
+  const nom = document.getElementById('regNom').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  if (password.length < 6) { showMsg('registerMsg', 'Mot de passe trop court.', 'error'); return; }
+  const data = await api('POST', '/api/register', { prenom, nom, email, password });
+  if (data.error) { showMsg('registerMsg', data.error, 'error'); return; }
+  currentUser = data.user;
+  updateNav();
+  showToast('Compte créé ! 🎉', 'success');
+  showPage('catalogue');
+}
+
+async function logout() {
+  await api('POST', '/api/logout');
+  currentUser = null;
+  updateNav();
+  showToast('À bientôt !', 'success');
+  showPage('home');
+}
+
+async function loadBooks() {
+  const data = await api('GET', '/api/livres');
+  allBooks = data;
+  renderBooks(allBooks);
+}
+
+function filterBooks() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const genre = document.getElementById('genreFilter').value;
+  const filtered = allBooks.filter(b =>
+    (b.titre.toLowerCase().includes(search) || b.auteur.toLowerCase().includes(search)) &&
+    (genre === '' || b.genre === genre)
+  );
+  renderBooks(filtered);
+}
+
+function renderBooks(books) {
+  const grid = document.getElementById('bookGrid');
+  if (!books.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2)">Aucun livre trouvé.</div>'; return; }
+  grid.innerHTML = books.map(b => {
+    const available = b.nb_emprunts === 0;
+    const btnClass = available ? 'can' : 'cant';
+    const btnText = available ? 'Emprunter' : 'Indisponible';
+    const btnAction = available ? `borrowBook(${b.id})` : '';
+    return `
+      <div class="book-card">
+        <div class="book-cover" style="background:${b.couleur}">
+          ${b.emoji}
+          <span class="book-badge ${available ? 'badge-available' : 'badge-borrowed'}">${available ? '✓ Dispo' : '✗ Emprunté'}</span>
+        </div>
+        <div class="book-info">
+          <div class="book-title">${b.titre}</div>
+          <div class="book-author">${b.auteur}</div>
+          <span class="book-genre">${b.genre}</span>
+          <button class="btn-borrow ${btnClass}" onclick="${btnAction}">${btnText}</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function borrowBook(livreId) {
+  if (!currentUser) { showToast('Connectez-vous pour emprunter.', 'error'); showPage('auth'); return; }
+  const data = await api('POST', '/api/emprunts', { livre_id: livreId });
+  if (data.error) { showToast(data.error, 'error'); return; }
+  showToast('Livre emprunté ! 📖', 'success');
+  loadBooks();
+}
+
+async function loadProfil() {
+  if (!currentUser) return;
+  document.getElementById('profilAvatar').textContent = currentUser.prenom[0] + currentUser.nom[0];
+  document.getElementById('profilNom').textContent = currentUser.prenom + ' ' + currentUser.nom;
+  document.getElementById('profilEmail').textContent = currentUser.email;
+  const emprunts = await api('GET', '/api/emprunts/mes-emprunts');
+  document.getElementById('empruntsCount').textContent = emprunts.length;
+  const list = document.getElementById('empruntsList');
+  if (!emprunts.length) { list.innerHTML = '<div class="empty-state">Aucun emprunt en cours.</div>'; return; }
+  list.innerHTML = emprunts.map(e => `
+    <div class="emprunt-card">
+      <div class="emprunt-info">
+        <span class="emprunt-emoji">${e.emoji}</span>
+        <div>
+          <div class="emprunt-title">${e.titre}</div>
+          <div class="emprunt-author">${e.auteur}</div>
+          <div class="emprunt-date">Emprunté le ${e.date_emprunt}</div>
+        </div>
+      </div>
+      <button class="btn-return" onclick="returnBook(${e.id})">Rendre</button>
+    </div>`).join('');
+}
+
+async function returnBook(empruntId) {
+  const data = await api('PUT', `/api/emprunts/${empruntId}/rendre`);
+  if (data.error) { showToast(data.error, 'error'); return; }
+  showToast('Livre rendu !', 'success');
+  loadProfil();
+  loadBooks();
+}
+
+function showMsg(id, text, type) {
+  document.getElementById(id).innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+
+function showToast(text, type) {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Init
+async function init() {
+  try {
+    const data = await api('GET', '/api/me');
+    if (data.user) currentUser = data.user;
+  } catch {}
+  updateNav();
+}
+
+init();
+</script>
+</body>
+</html>
